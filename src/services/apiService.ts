@@ -55,10 +55,16 @@ export class ApiService {
     }
   }
 
-  async post<T>(endpoint: string, data?: unknown): Promise<T> {
+  async post<T>(endpoint: string, data?: unknown, token?: string): Promise<T> {
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
     return this.makeRequest<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      headers,
     });
   }
 
@@ -87,6 +93,19 @@ export class ApiService {
     });
   }
 
+  async patch<T>(endpoint: string, data?: unknown, token?: string): Promise<T> {
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    return this.makeRequest<T>(endpoint, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+      headers,
+    });
+  }
+
   async delete<T>(endpoint: string, token?: string): Promise<T> {
     const headers: Record<string, string> = {};
     if (token) {
@@ -97,5 +116,9 @@ export class ApiService {
       method: 'DELETE',
       headers,
     });
+  }
+
+  getApiUrl(): string {
+    return this.baseUrl;
   }
 }
