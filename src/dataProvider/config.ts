@@ -4,6 +4,7 @@ export const DATA_PROVIDER_CONFIG = {
   SUPPORTED_RESOURCES: {
     USERS: "users",
     DEPARTMENTS: "departments",
+    CARDS: "cards",
   },
   
   // Configuración de paginación por defecto
@@ -33,6 +34,14 @@ export const DATA_PROVIDER_CONFIG = {
     SORT_BY: "sortBy",
     SORT_ORDER: "sortOrder",
   },
+  
+  // Campos de filtro soportados para tarjetas
+  CARD_FILTER_FIELDS: {
+    TYPE: "type",
+    IS_ACTIVE: "isActive",
+    SORT_BY: "sortBy",
+    SORT_ORDER: "sortOrder",
+  },
 } as const;
 
 // Tipos de configuración
@@ -40,3 +49,4 @@ export type SupportedResource = typeof DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES[
 export type FilterOperator = typeof DATA_PROVIDER_CONFIG.SUPPORTED_FILTER_OPERATORS[keyof typeof DATA_PROVIDER_CONFIG.SUPPORTED_FILTER_OPERATORS];
 export type UserFilterField = typeof DATA_PROVIDER_CONFIG.USER_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.USER_FILTER_FIELDS];
 export type DepartmentFilterField = typeof DATA_PROVIDER_CONFIG.DEPARTMENT_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.DEPARTMENT_FILTER_FIELDS];
+export type CardFilterField = typeof DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS];

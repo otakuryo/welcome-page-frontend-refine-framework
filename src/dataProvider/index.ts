@@ -25,6 +25,7 @@ import type {
 import { ApiService } from "../services/apiService";
 import { UsersService } from "../services/usersService";
 import { DepartmentsService } from "../services/departmentsService";
+import { CardsService } from "../services/cardsService";
 import { AuthService } from "../services/authService";
 import type {
   UsersListQuery,
@@ -38,6 +39,11 @@ import type {
   CreateDepartmentRequest,
   UpdateDepartmentRequest,
 } from "../types/departments";
+import type {
+  CardsListQuery,
+  CreateCardRequest,
+  UpdateCardRequest,
+} from "../types/cards";
 import { DataProviderErrorHandler } from "./errorHandler";
 import { DataProviderFilterHandler } from "./filterHandler";
 import { DATA_PROVIDER_CONFIG } from "./config";
@@ -46,6 +52,7 @@ import { DATA_PROVIDER_CONFIG } from "./config";
 const apiService = new ApiService();
 const usersService = new UsersService(apiService);
 const departmentsService = new DepartmentsService(apiService);
+const cardsService = new CardsService(apiService);
 const authService = new AuthService(apiService);
 
 export const dataProvider: DataProvider = {
@@ -85,6 +92,18 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        const query = DataProviderFilterHandler.createBaseCardQuery(pagination);
+        const filteredQuery = DataProviderFilterHandler.applyCardFilters(filters, query);
+        
+        const response = await cardsService.listCards(filteredQuery, token || undefined);
+        
+        return {
+          data: response.data as unknown as TData[],
+          total: response.pagination.total,
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -114,6 +133,21 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        // Para cards, obtenemos la lista y filtramos por ID
+        // ya que no hay un endpoint específico getById en la API
+        const response = await cardsService.listCards({}, token || undefined);
+        const card = response.data.find((card: any) => card.id === String(id));
+        
+        if (!card) {
+          throw new Error(`Card with id ${id} not found`);
+        }
+        
+        return {
+          data: card as unknown as TData,
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -140,6 +174,14 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
         const departmentData = variables as CreateDepartmentRequest;
         const response = await departmentsService.createDepartment(departmentData, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        const cardData = variables as CreateCardRequest;
+        const response = await cardsService.createCard(cardData, token || undefined);
         return {
           data: response.data as unknown as TData,
         };
@@ -230,6 +272,14 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        const updateData = variables as UpdateCardRequest;
+        const response = await cardsService.updateCard(String(id), updateData, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -257,6 +307,14 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
         // Para departamentos, realizamos eliminación física
         const response = await departmentsService.deleteDepartment(String(id), token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        // Para cards, realizamos eliminación suave por defecto
+        const response = await cardsService.softDeleteCard(String(id), token || undefined);
         return {
           data: response.data as unknown as TData,
         };
@@ -295,6 +353,18 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        // Para cards, obtenemos todas las tarjetas y filtramos por los IDs
+        const response = await cardsService.listCards({}, token || undefined);
+        const filteredCards = response.data.filter((card: any) => 
+          ids.map(id => String(id)).includes(card.id)
+        );
+        
+        return {
+          data: filteredCards as unknown as TData[],
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -324,6 +394,17 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
         const promises = variables.map((departmentData: any) => 
           departmentsService.createDepartment(departmentData as CreateDepartmentRequest, token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        const promises = variables.map((cardData: any) => 
+          cardsService.createCard(cardData as CreateCardRequest, token || undefined)
         );
         const responses = await Promise.all(promises);
         
@@ -373,6 +454,18 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        // Para cards, actualizamos uno por uno ya que no hay bulk update en la API
+        const promises = ids.map(id => 
+          cardsService.updateCard(String(id), variables as UpdateCardRequest, token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -404,6 +497,18 @@ export const dataProvider: DataProvider = {
         // Para departamentos, eliminamos uno por uno ya que no hay bulk delete en la API
         const promises = ids.map(id => 
           departmentsService.deleteDepartment(String(id), token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
+        // Para cards, realizamos eliminación suave uno por uno
+        const promises = ids.map(id => 
+          cardsService.softDeleteCard(String(id), token || undefined)
         );
         const responses = await Promise.all(promises);
         
@@ -539,6 +644,73 @@ export const dataProvider: DataProvider = {
           cardId, 
           token || undefined
         );
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar obtener mis tarjetas - path específico: /cards/my-cards
+      if (url === '/cards/my-cards' && method === 'get') {
+        const response = await cardsService.getMyCards(token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar asignación de tarjeta a usuario - path específico: /cards/{cardId}/assign/{userId}
+      if (url?.match(/^\/cards\/[^\/]+\/assign\/[^\/]+$/) && method === 'post') {
+        const urlParts = url.split('/');
+        const cardId = urlParts[2]; // /cards/{cardId}/assign/{userId}
+        const userId = urlParts[4];
+        
+        const response = await cardsService.assignCardToUser(
+          cardId, 
+          userId, 
+          payload as any, 
+          token || undefined
+        );
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar desasignación de tarjeta de usuario - path específico: /cards/{cardId}/assign/{userId}
+      if (url?.match(/^\/cards\/[^\/]+\/assign\/[^\/]+$/) && method === 'delete') {
+        const urlParts = url.split('/');
+        const cardId = urlParts[2]; // /cards/{cardId}/assign/{userId}
+        const userId = urlParts[4];
+        
+        const response = await cardsService.unassignCardFromUser(
+          cardId, 
+          userId, 
+          token || undefined
+        );
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar actualización de tarjeta destacada - path específico: /cards/{cardId}/featured
+      if (url?.match(/^\/cards\/[^\/]+\/featured$/) && method === 'patch') {
+        const urlParts = url.split('/');
+        const cardId = urlParts[2]; // /cards/{cardId}/featured
+        
+        const response = await cardsService.updateCardFeatured(
+          cardId, 
+          payload as any, 
+          token || undefined
+        );
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar eliminación completa de tarjeta - path específico: /cards/{cardId}/delete
+      if (url?.match(/^\/cards\/[^\/]+\/delete$/) && method === 'delete') {
+        const urlParts = url.split('/');
+        const cardId = urlParts[2]; // /cards/{cardId}/delete
+        
+        const response = await cardsService.deleteCard(cardId, token || undefined);
         return {
           data: response.data as unknown as TData,
         };

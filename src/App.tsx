@@ -39,6 +39,7 @@ import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { UsersCreate, UsersEdit, UsersList, UsersShow, UsersResetPassword } from "./pages/users";
 import { DepartmentsCreate, DepartmentsEdit, DepartmentsList, DepartmentsShow } from "./pages/departments";
+import { CardsCreate, CardsEdit, CardsList, CardsShow } from "./pages/cards";
 
 function App() {
   return (
@@ -86,6 +87,16 @@ function App() {
                     create: "/departments/create",
                     edit: "/departments/edit/:id",
                     show: "/departments/show/:id",
+                    meta: {
+                      canDelete: true,
+                    },
+                  },
+                  {
+                    name: "cards",
+                    list: "/cards",
+                    create: "/cards/create",
+                    edit: "/cards/edit/:id",
+                    show: "/cards/show/:id",
                     meta: {
                       canDelete: true,
                     },
@@ -142,6 +153,12 @@ function App() {
                       <Route path="create" element={<DepartmentsCreate />} />
                       <Route path="edit/:id" element={<DepartmentsEdit />} />
                       <Route path="show/:id" element={<DepartmentsShow />} />
+                    </Route>
+                    <Route path="/cards">
+                      <Route index element={<CardsList />} />
+                      <Route path="create" element={<CardsCreate />} />
+                      <Route path="edit/:id" element={<CardsEdit />} />
+                      <Route path="show/:id" element={<CardsShow />} />
                     </Route>
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>

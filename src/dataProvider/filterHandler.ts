@@ -1,6 +1,7 @@
 import type { CrudFilter, CrudOperators } from "@refinedev/core";
 import type { UsersListQuery } from "../types/users";
 import type { DepartmentsListQuery } from "../types/departments";
+import type { CardsListQuery } from "../types/cards";
 import { DATA_PROVIDER_CONFIG } from "./config";
 
 // Clase para manejar filtros del Data Provider
@@ -151,6 +152,72 @@ export class DataProviderFilterHandler {
    * Crea una consulta base con paginación para departamentos
    */
   static createBaseDepartmentQuery(pagination?: { current?: number; pageSize?: number }): DepartmentsListQuery {
+    return {
+      page: pagination?.current || DATA_PROVIDER_CONFIG.DEFAULT_PAGINATION.PAGE,
+      limit: pagination?.pageSize || DATA_PROVIDER_CONFIG.DEFAULT_PAGINATION.PAGE_SIZE,
+      isActive: "all",
+    };
+  }
+
+  /**
+   * Aplica filtros a la consulta de tarjetas
+   */
+  static applyCardFilters(
+    filters: CrudFilter[] | undefined, 
+    query: CardsListQuery
+  ): CardsListQuery {
+    if (!filters) return query;
+
+    filters.forEach((filter: CrudFilter) => {
+      if (filter.operator === CrudOperators.EQ) {
+        this.applyCardEqualsFilter(filter, query);
+      }
+    });
+
+    return query;
+  }
+
+  /**
+   * Aplica filtros de igualdad para tarjetas
+   */
+  private static applyCardEqualsFilter(
+    filter: CrudFilter, 
+    query: CardsListQuery
+  ): void {
+    const field = filter.field as string;
+    const value = filter.value;
+
+    switch (field) {
+      case DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS.TYPE:
+        if (value) {
+          query.type = value as any;
+        }
+        break;
+      
+      case DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS.IS_ACTIVE:
+        if (value !== undefined) {
+          query.isActive = value ? "true" : "false";
+        }
+        break;
+      
+      case DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS.SORT_BY:
+        if (value) {
+          query.sortBy = value as any;
+        }
+        break;
+      
+      case DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS.SORT_ORDER:
+        if (value) {
+          query.sortOrder = value as any;
+        }
+        break;
+    }
+  }
+
+  /**
+   * Crea una consulta base con paginación para tarjetas
+   */
+  static createBaseCardQuery(pagination?: { current?: number; pageSize?: number }): CardsListQuery {
     return {
       page: pagination?.current || DATA_PROVIDER_CONFIG.DEFAULT_PAGINATION.PAGE,
       limit: pagination?.pageSize || DATA_PROVIDER_CONFIG.DEFAULT_PAGINATION.PAGE_SIZE,
