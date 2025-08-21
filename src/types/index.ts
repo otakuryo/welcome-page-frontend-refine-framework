@@ -41,3 +41,12 @@ export type {
   DeleteCardResponse,
   SoftDeleteCardResponse,
 } from './cards';
+
+export type {
+  WifiNetwork,
+  WifiListQuery,
+  CreateWifiNetworkRequest,
+  UpdateWifiNetworkRequest,
+  WifiResponse,
+  WifiListResponse,
+} from './wifi';

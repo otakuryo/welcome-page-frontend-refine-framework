@@ -3,4 +3,5 @@ export { ApiService } from './apiService';
 export { AuthService } from './authService';
 export { UsersService } from './usersService';
 export { CardsService } from './cardsService';
+export { WifiService } from './wifiService';
 export { dataProvider } from '../dataProvider';

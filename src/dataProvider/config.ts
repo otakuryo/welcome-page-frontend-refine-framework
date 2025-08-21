@@ -5,6 +5,7 @@ export const DATA_PROVIDER_CONFIG = {
     USERS: "users",
     DEPARTMENTS: "departments",
     CARDS: "cards",
+    WIFI: "wifi",
   },
   
   // Configuración de paginación por defecto
@@ -42,6 +43,12 @@ export const DATA_PROVIDER_CONFIG = {
     SORT_BY: "sortBy",
     SORT_ORDER: "sortOrder",
   },
+  
+  // Campos de filtro soportados para redes WiFi
+  WIFI_FILTER_FIELDS: {
+    IS_ACTIVE: "isActive",
+    NETWORK_NAME: "networkName",
+  },
 } as const;
 
 // Tipos de configuración
@@ -50,3 +57,4 @@ export type FilterOperator = typeof DATA_PROVIDER_CONFIG.SUPPORTED_FILTER_OPERAT
 export type UserFilterField = typeof DATA_PROVIDER_CONFIG.USER_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.USER_FILTER_FIELDS];
 export type DepartmentFilterField = typeof DATA_PROVIDER_CONFIG.DEPARTMENT_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.DEPARTMENT_FILTER_FIELDS];
 export type CardFilterField = typeof DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS];
+export type WifiFilterField = typeof DATA_PROVIDER_CONFIG.WIFI_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.WIFI_FILTER_FIELDS];

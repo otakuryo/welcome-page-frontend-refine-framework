@@ -40,6 +40,7 @@ import { Register } from "./pages/register";
 import { UsersCreate, UsersEdit, UsersList, UsersShow, UsersResetPassword } from "./pages/users";
 import { DepartmentsCreate, DepartmentsEdit, DepartmentsList, DepartmentsShow } from "./pages/departments";
 import { CardsCreate, CardsEdit, CardsList, CardsShow } from "./pages/cards";
+import { WifiCreate, WifiEdit, WifiList, WifiShow } from "./pages/wifi";
 
 function App() {
   return (
@@ -97,6 +98,16 @@ function App() {
                     create: "/cards/create",
                     edit: "/cards/edit/:id",
                     show: "/cards/show/:id",
+                    meta: {
+                      canDelete: true,
+                    },
+                  },
+                  {
+                    name: "wifi",
+                    list: "/wifi",
+                    create: "/wifi/create",
+                    edit: "/wifi/edit/:id",
+                    show: "/wifi/show/:id",
                     meta: {
                       canDelete: true,
                     },
@@ -159,6 +170,12 @@ function App() {
                       <Route path="create" element={<CardsCreate />} />
                       <Route path="edit/:id" element={<CardsEdit />} />
                       <Route path="show/:id" element={<CardsShow />} />
+                    </Route>
+                    <Route path="/wifi">
+                      <Route index element={<WifiList />} />
+                      <Route path="create" element={<WifiCreate />} />
+                      <Route path="edit/:id" element={<WifiEdit />} />
+                      <Route path="show/:id" element={<WifiShow />} />
                     </Route>
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>

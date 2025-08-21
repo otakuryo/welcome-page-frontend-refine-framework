@@ -26,6 +26,7 @@ import { ApiService } from "../services/apiService";
 import { UsersService } from "../services/usersService";
 import { DepartmentsService } from "../services/departmentsService";
 import { CardsService } from "../services/cardsService";
+import { WifiService } from "../services/wifiService";
 import { AuthService } from "../services/authService";
 import type {
   UsersListQuery,
@@ -44,6 +45,11 @@ import type {
   CreateCardRequest,
   UpdateCardRequest,
 } from "../types/cards";
+import type {
+  WifiListQuery,
+  CreateWifiNetworkRequest,
+  UpdateWifiNetworkRequest,
+} from "../types/wifi";
 import { DataProviderErrorHandler } from "./errorHandler";
 import { DataProviderFilterHandler } from "./filterHandler";
 import { DATA_PROVIDER_CONFIG } from "./config";
@@ -53,6 +59,7 @@ const apiService = new ApiService();
 const usersService = new UsersService(apiService);
 const departmentsService = new DepartmentsService(apiService);
 const cardsService = new CardsService(apiService);
+const wifiService = new WifiService(apiService);
 const authService = new AuthService(apiService);
 
 export const dataProvider: DataProvider = {
@@ -104,6 +111,18 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        const query = DataProviderFilterHandler.createBaseWifiQuery();
+        const filteredQuery = DataProviderFilterHandler.applyWifiFilters(filters, query);
+        
+        const response = await wifiService.listWifiNetworks(filteredQuery, token || undefined);
+        
+        return {
+          data: response.data as unknown as TData[],
+          total: response.data.length, // WiFi API no incluye paginación según el OpenAPI
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -148,6 +167,28 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        // Para WiFi, intentamos usar getById si existe, si no, obtenemos la lista
+        try {
+          const response = await wifiService.getWifiNetworkById(String(id), token || undefined);
+          return {
+            data: response.data as unknown as TData,
+          };
+        } catch (error) {
+          // Fallback: obtener lista y filtrar por ID
+          const listResponse = await wifiService.listWifiNetworks({}, token || undefined);
+          const network = listResponse.data.find((network: any) => network.id === String(id));
+          
+          if (!network) {
+            throw new Error(`WiFi network with id ${id} not found`);
+          }
+          
+          return {
+            data: network as unknown as TData,
+          };
+        }
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -182,6 +223,14 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
         const cardData = variables as CreateCardRequest;
         const response = await cardsService.createCard(cardData, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        const wifiData = variables as CreateWifiNetworkRequest;
+        const response = await wifiService.createWifiNetwork(wifiData, token || undefined);
         return {
           data: response.data as unknown as TData,
         };
@@ -280,6 +329,14 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        const updateData = variables as UpdateWifiNetworkRequest;
+        const response = await wifiService.updateWifiNetwork(String(id), updateData, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -315,6 +372,14 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
         // Para cards, realizamos eliminación suave por defecto
         const response = await cardsService.softDeleteCard(String(id), token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        // Para WiFi, desactivamos la red en lugar de eliminarla completamente
+        const response = await wifiService.toggleWifiNetworkStatus(String(id), false, token || undefined);
         return {
           data: response.data as unknown as TData,
         };
@@ -365,6 +430,18 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        // Para WiFi, obtenemos todas las redes y filtramos por los IDs
+        const response = await wifiService.listWifiNetworks({}, token || undefined);
+        const filteredNetworks = response.data.filter((network: any) => 
+          ids.map(id => String(id)).includes(network.id)
+        );
+        
+        return {
+          data: filteredNetworks as unknown as TData[],
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -405,6 +482,17 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
         const promises = variables.map((cardData: any) => 
           cardsService.createCard(cardData as CreateCardRequest, token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        const promises = variables.map((wifiData: any) => 
+          wifiService.createWifiNetwork(wifiData as CreateWifiNetworkRequest, token || undefined)
         );
         const responses = await Promise.all(promises);
         
@@ -466,6 +554,18 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        // Para WiFi, actualizamos uno por uno ya que no hay bulk update en la API
+        const promises = ids.map(id => 
+          wifiService.updateWifiNetwork(String(id), variables as UpdateWifiNetworkRequest, token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -509,6 +609,18 @@ export const dataProvider: DataProvider = {
         // Para cards, realizamos eliminación suave uno por uno
         const promises = ids.map(id => 
           cardsService.softDeleteCard(String(id), token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
+        // Para WiFi, desactivamos las redes uno por uno (eliminación suave)
+        const promises = ids.map(id => 
+          wifiService.toggleWifiNetworkStatus(String(id), false, token || undefined)
         );
         const responses = await Promise.all(promises);
         

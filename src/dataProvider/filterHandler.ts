@@ -2,6 +2,7 @@ import type { CrudFilter, CrudOperators } from "@refinedev/core";
 import type { UsersListQuery } from "../types/users";
 import type { DepartmentsListQuery } from "../types/departments";
 import type { CardsListQuery } from "../types/cards";
+import type { WifiListQuery } from "../types/wifi";
 import { DATA_PROVIDER_CONFIG } from "./config";
 
 // Clase para manejar filtros del Data Provider
@@ -221,6 +222,69 @@ export class DataProviderFilterHandler {
     return {
       page: pagination?.current || DATA_PROVIDER_CONFIG.DEFAULT_PAGINATION.PAGE,
       limit: pagination?.pageSize || DATA_PROVIDER_CONFIG.DEFAULT_PAGINATION.PAGE_SIZE,
+      isActive: "all",
+    };
+  }
+
+  /**
+   * Aplica filtros a la consulta de redes WiFi
+   */
+  static applyWifiFilters(
+    filters: CrudFilter[] | undefined, 
+    query: WifiListQuery
+  ): WifiListQuery {
+    if (!filters) return query;
+
+    filters.forEach((filter: CrudFilter) => {
+      if (filter.operator === CrudOperators.EQ) {
+        this.applyWifiEqualsFilter(filter, query);
+      } else if (filter.operator === CrudOperators.CONTAINS) {
+        this.applyWifiContainsFilter(filter, query);
+      }
+    });
+
+    return query;
+  }
+
+  /**
+   * Aplica filtros de igualdad para redes WiFi
+   */
+  private static applyWifiEqualsFilter(
+    filter: CrudFilter, 
+    query: WifiListQuery
+  ): void {
+    const field = filter.field as string;
+    const value = filter.value;
+
+    switch (field) {
+      case DATA_PROVIDER_CONFIG.WIFI_FILTER_FIELDS.IS_ACTIVE:
+        if (value !== undefined) {
+          query.isActive = value ? "true" : "false";
+        }
+        break;
+    }
+  }
+
+  /**
+   * Aplica filtros de contenido para redes WiFi
+   */
+  private static applyWifiContainsFilter(
+    filter: CrudFilter, 
+    query: WifiListQuery
+  ): void {
+    const field = filter.field as string;
+    const value = filter.value;
+
+    if (field === DATA_PROVIDER_CONFIG.WIFI_FILTER_FIELDS.NETWORK_NAME && value) {
+      query.networkName = value as string;
+    }
+  }
+
+  /**
+   * Crea una consulta base para redes WiFi
+   */
+  static createBaseWifiQuery(): WifiListQuery {
+    return {
       isActive: "all",
     };
   }
