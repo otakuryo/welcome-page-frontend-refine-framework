@@ -1,6 +1,14 @@
 import { Authenticated, Refine } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
+import {
+  UserOutlined,
+  TeamOutlined,
+  CreditCardOutlined,
+  WifiOutlined,
+  FileTextOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
 
 import {
   ErrorComponent,
@@ -56,31 +64,14 @@ function App() {
                 authProvider={authProvider}
                 resources={[
                   {
-                    name: "blog_posts",
-                    list: "/blog-posts",
-                    create: "/blog-posts/create",
-                    edit: "/blog-posts/edit/:id",
-                    show: "/blog-posts/show/:id",
-                    meta: {
-                      canDelete: true,
-                    },
-                  },
-                  {
-                    name: "categories",
-                    list: "/categories",
-                    create: "/categories/create",
-                    edit: "/categories/edit/:id",
-                    show: "/categories/show/:id",
-                    meta: {
-                      canDelete: true,
-                    },
-                  },
-                  {
                     name: "users",
                     list: "/users",
                     create: "/users/create",
                     edit: "/users/edit/:id",
                     show: "/users/show/:id",
+                    meta: {
+                      icon: <UserOutlined />,
+                    },
                   },
                   {
                     name: "departments",
@@ -90,6 +81,7 @@ function App() {
                     show: "/departments/show/:id",
                     meta: {
                       canDelete: true,
+                      icon: <TeamOutlined />,
                     },
                   },
                   {
@@ -100,6 +92,7 @@ function App() {
                     show: "/cards/show/:id",
                     meta: {
                       canDelete: true,
+                      icon: <CreditCardOutlined />,
                     },
                   },
                   {
@@ -110,6 +103,7 @@ function App() {
                     show: "/wifi/show/:id",
                     meta: {
                       canDelete: true,
+                      icon: <WifiOutlined />,
                     },
                   },
                 ]}
@@ -138,20 +132,8 @@ function App() {
                   >
                     <Route
                       index
-                      element={<NavigateToResource resource="blog_posts" />}
+                      element={<NavigateToResource resource="users" />}
                     />
-                    <Route path="/blog-posts">
-                      <Route index element={<BlogPostList />} />
-                      <Route path="create" element={<BlogPostCreate />} />
-                      <Route path="edit/:id" element={<BlogPostEdit />} />
-                      <Route path="show/:id" element={<BlogPostShow />} />
-                    </Route>
-                    <Route path="/categories">
-                      <Route index element={<CategoryList />} />
-                      <Route path="create" element={<CategoryCreate />} />
-                      <Route path="edit/:id" element={<CategoryEdit />} />
-                      <Route path="show/:id" element={<CategoryShow />} />
-                    </Route>
                     <Route path="/users">
                       <Route index element={<UsersList />} />
                       <Route path="create" element={<UsersCreate />} />
