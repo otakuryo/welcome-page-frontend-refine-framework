@@ -27,6 +27,7 @@ import { UsersService } from "../services/usersService";
 import { DepartmentsService } from "../services/departmentsService";
 import { CardsService } from "../services/cardsService";
 import { WifiService } from "../services/wifiService";
+import { QuickLinksService } from "../services/quickLinksService";
 import { AuthService } from "../services/authService";
 import type {
   UsersListQuery,
@@ -50,6 +51,11 @@ import type {
   CreateWifiNetworkRequest,
   UpdateWifiNetworkRequest,
 } from "../types/wifi";
+import type {
+  QuickLinksListQuery,
+  CreateQuickLinkRequest,
+  UpdateQuickLinkRequest,
+} from "../types/quicklinks";
 import { DataProviderErrorHandler } from "./errorHandler";
 import { DataProviderFilterHandler } from "./filterHandler";
 import { DATA_PROVIDER_CONFIG } from "./config";
@@ -60,6 +66,7 @@ const usersService = new UsersService(apiService);
 const departmentsService = new DepartmentsService(apiService);
 const cardsService = new CardsService(apiService);
 const wifiService = new WifiService(apiService);
+const quickLinksService = new QuickLinksService(apiService);
 const authService = new AuthService(apiService);
 
 export const dataProvider: DataProvider = {
@@ -120,6 +127,18 @@ export const dataProvider: DataProvider = {
         return {
           data: response.data as unknown as TData[],
           total: response.data.length, // WiFi API no incluye paginación según el OpenAPI
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.QUICK_LINKS) {
+        const query = DataProviderFilterHandler.createBaseQuickLinksQuery();
+        const filteredQuery = DataProviderFilterHandler.applyQuickLinksFilters(filters, query);
+        
+        const response = await quickLinksService.listQuickLinks(filteredQuery, token || undefined);
+        
+        return {
+          data: response.data as unknown as TData[],
+          total: response.data.length, // QuickLinks API no incluye paginación según el OpenAPI
         };
       }
 
@@ -189,6 +208,14 @@ export const dataProvider: DataProvider = {
         }
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.QUICK_LINKS) {
+        // Para QuickLinks, podemos usar getById directamente según la API
+        const response = await quickLinksService.getQuickLinkById(String(id), token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -231,6 +258,14 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
         const wifiData = variables as CreateWifiNetworkRequest;
         const response = await wifiService.createWifiNetwork(wifiData, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.QUICK_LINKS) {
+        const quickLinkData = variables as CreateQuickLinkRequest;
+        const response = await quickLinksService.createQuickLink(quickLinkData, token || undefined);
         return {
           data: response.data as unknown as TData,
         };
@@ -337,6 +372,14 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.QUICK_LINKS) {
+        const updateData = variables as UpdateQuickLinkRequest;
+        const response = await quickLinksService.updateQuickLink(String(id), updateData, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -382,6 +425,14 @@ export const dataProvider: DataProvider = {
         const response = await wifiService.toggleWifiNetworkStatus(String(id), false, token || undefined);
         return {
           data: response.data as unknown as TData,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.QUICK_LINKS) {
+        // Para QuickLinks, realizamos eliminación física según la API
+        const response = await quickLinksService.deleteQuickLink(String(id), token || undefined);
+        return {
+          data: { id: String(id) } as unknown as TData, // Devolvemos el ID ya que la API devuelve null en data
         };
       }
 

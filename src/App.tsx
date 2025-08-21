@@ -8,6 +8,7 @@ import {
   WifiOutlined,
   FileTextOutlined,
   AppstoreOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 
 import {
@@ -49,6 +50,7 @@ import { UsersCreate, UsersEdit, UsersList, UsersShow, UsersResetPassword } from
 import { DepartmentsCreate, DepartmentsEdit, DepartmentsList, DepartmentsShow } from "./pages/departments";
 import { CardsCreate, CardsEdit, CardsList, CardsShow } from "./pages/cards";
 import { WifiCreate, WifiEdit, WifiList, WifiShow } from "./pages/wifi";
+import { QuickLinksCreate, QuickLinksEdit, QuickLinksList, QuickLinksShow } from "./pages/quick-links";
 
 function App() {
   return (
@@ -106,6 +108,18 @@ function App() {
                       icon: <WifiOutlined />,
                     },
                   },
+                  {
+                    name: "quick-links",
+                    list: "/quick-links",
+                    create: "/quick-links/create",
+                    edit: "/quick-links/edit/:id",
+                    show: "/quick-links/show/:id",
+                    meta: {
+                      canDelete: true,
+                      icon: <LinkOutlined />,
+                      label: "Enlaces Rápidos",
+                    },
+                  },
                 ]}
                 options={{
                   syncWithLocation: true,
@@ -158,6 +172,12 @@ function App() {
                       <Route path="create" element={<WifiCreate />} />
                       <Route path="edit/:id" element={<WifiEdit />} />
                       <Route path="show/:id" element={<WifiShow />} />
+                    </Route>
+                    <Route path="/quick-links">
+                      <Route index element={<QuickLinksList />} />
+                      <Route path="create" element={<QuickLinksCreate />} />
+                      <Route path="edit/:id" element={<QuickLinksEdit />} />
+                      <Route path="show/:id" element={<QuickLinksShow />} />
                     </Route>
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>

@@ -6,6 +6,7 @@ export const DATA_PROVIDER_CONFIG = {
     DEPARTMENTS: "departments",
     CARDS: "cards",
     WIFI: "wifi",
+    QUICK_LINKS: "quick-links",
   },
   
   // Configuración de paginación por defecto
@@ -49,6 +50,12 @@ export const DATA_PROVIDER_CONFIG = {
     IS_ACTIVE: "isActive",
     NETWORK_NAME: "networkName",
   },
+  
+  // Campos de filtro soportados para enlaces rápidos
+  QUICK_LINKS_FILTER_FIELDS: {
+    CATEGORY: "category",
+    IS_ACTIVE: "isActive",
+  },
 } as const;
 
 // Tipos de configuración
@@ -58,3 +65,4 @@ export type UserFilterField = typeof DATA_PROVIDER_CONFIG.USER_FILTER_FIELDS[key
 export type DepartmentFilterField = typeof DATA_PROVIDER_CONFIG.DEPARTMENT_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.DEPARTMENT_FILTER_FIELDS];
 export type CardFilterField = typeof DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.CARD_FILTER_FIELDS];
 export type WifiFilterField = typeof DATA_PROVIDER_CONFIG.WIFI_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.WIFI_FILTER_FIELDS];
+export type QuickLinksFilterField = typeof DATA_PROVIDER_CONFIG.QUICK_LINKS_FILTER_FIELDS[keyof typeof DATA_PROVIDER_CONFIG.QUICK_LINKS_FILTER_FIELDS];

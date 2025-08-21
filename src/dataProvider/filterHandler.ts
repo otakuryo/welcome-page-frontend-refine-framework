@@ -3,6 +3,7 @@ import type { UsersListQuery } from "../types/users";
 import type { DepartmentsListQuery } from "../types/departments";
 import type { CardsListQuery } from "../types/cards";
 import type { WifiListQuery } from "../types/wifi";
+import type { QuickLinksListQuery } from "../types/quicklinks";
 import { DATA_PROVIDER_CONFIG } from "./config";
 
 // Clase para manejar filtros del Data Provider
@@ -284,6 +285,75 @@ export class DataProviderFilterHandler {
    * Crea una consulta base para redes WiFi
    */
   static createBaseWifiQuery(): WifiListQuery {
+    return {
+      isActive: "all",
+    };
+  }
+
+  /**
+   * Aplica filtros a la consulta de enlaces rápidos
+   */
+  static applyQuickLinksFilters(
+    filters: CrudFilter[] | undefined, 
+    query: QuickLinksListQuery
+  ): QuickLinksListQuery {
+    if (!filters) return query;
+
+    filters.forEach((filter: CrudFilter) => {
+      if (filter.operator === CrudOperators.EQ) {
+        this.applyQuickLinksEqualsFilter(filter, query);
+      } else if (filter.operator === CrudOperators.CONTAINS) {
+        this.applyQuickLinksContainsFilter(filter, query);
+      }
+    });
+
+    return query;
+  }
+
+  /**
+   * Aplica filtros de igualdad para enlaces rápidos
+   */
+  private static applyQuickLinksEqualsFilter(
+    filter: CrudFilter, 
+    query: QuickLinksListQuery
+  ): void {
+    const field = filter.field as string;
+    const value = filter.value;
+
+    switch (field) {
+      case DATA_PROVIDER_CONFIG.QUICK_LINKS_FILTER_FIELDS.IS_ACTIVE:
+        if (value !== undefined) {
+          query.isActive = value ? "true" : "false";
+        }
+        break;
+      
+      case DATA_PROVIDER_CONFIG.QUICK_LINKS_FILTER_FIELDS.CATEGORY:
+        if (value) {
+          query.category = value as string;
+        }
+        break;
+    }
+  }
+
+  /**
+   * Aplica filtros de contenido para enlaces rápidos
+   */
+  private static applyQuickLinksContainsFilter(
+    filter: CrudFilter, 
+    query: QuickLinksListQuery
+  ): void {
+    const field = filter.field as string;
+    const value = filter.value;
+
+    if (field === DATA_PROVIDER_CONFIG.QUICK_LINKS_FILTER_FIELDS.CATEGORY && value) {
+      query.category = value as string;
+    }
+  }
+
+  /**
+   * Crea una consulta base para enlaces rápidos
+   */
+  static createBaseQuickLinksQuery(): QuickLinksListQuery {
     return {
       isActive: "all",
     };

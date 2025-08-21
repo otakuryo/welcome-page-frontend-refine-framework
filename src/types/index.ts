@@ -50,3 +50,13 @@ export type {
   WifiResponse,
   WifiListResponse,
 } from './wifi';
+
+export type {
+  QuickLink,
+  QuickLinksListQuery,
+  CreateQuickLinkRequest,
+  UpdateQuickLinkRequest,
+  DeleteQuickLinkResponse,
+  QuickLinksListResponse,
+  QuickLinkResponse,
+} from './quicklinks';
