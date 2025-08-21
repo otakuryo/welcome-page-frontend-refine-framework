@@ -1,108 +1,123 @@
-import { Edit } from "@refinedev/antd";
-import { useEffect, useMemo, useState } from "react";
-import { Button, Form, Input, Select, Switch, message } from "antd";
+import { Edit, useForm } from "@refinedev/antd";
+import { usePermissions, useOne } from "@refinedev/core";
+import { Form, Input, Select, Switch, Divider } from "antd";
+import { useMemo, useEffect } from "react";
 import { useParams } from "react-router";
-import { ApiService } from "../../services/apiService";
-import { UsersService } from "../../services/usersService";
-import type { UpdatePersonalInfoRequest, UpdateRoleRequest, UpdateStatusRequest, UserDetailed, UserRole } from "../../types/users";
-import { AuthService } from "../../services/authService";
-import { usePermissions } from "@refinedev/core";
+import type { UserDetailed } from "../../types/users";
 import { roleOptions } from "./models/RoleOptions";
 
-const api = new ApiService();
-const usersService = new UsersService(api);
-const authService = new AuthService(api);
+// Tipo extendido para el formulario que incluye campos de información personal al nivel superior
+interface UserFormData extends UserDetailed {
+  phone?: string;
+  department?: string;
+  position?: string;
+  startDate?: string;
+  birthDate?: string;
+  emergencyContact?: string;
+  currentMachine?: string;
+}
 
 export const UsersEdit = () => {
-
+  const { id } = useParams<{ id: string }>();
   const { data: permissions } = usePermissions();
   const canManage = useMemo(() => permissions === "ADMIN" || permissions === "CEO" || permissions === "RRHH", [permissions]);
 
-  const params = useParams();
-  const [loading, setLoading] = useState(false);
-  const [record, setRecord] = useState<UserDetailed | null>(null);
-  const [form] = Form.useForm<UpdatePersonalInfoRequest>();
+  // Obtener datos del usuario para mapear información personal
+  const { data: userData } = useOne<UserDetailed>({
+    resource: "users",
+    id: id!,
+  });
 
-  const token = authService.getToken() || undefined;
+  const { formProps, saveButtonProps, form } = useForm<UserFormData>({
+    redirect: "list",
+    resource: "users",
+    action: "edit",
+    defaultFormValues: {
+      role: "USUARIO",
+      isActive: true,
+    }
+  });
 
+  // Mapear información personal al nivel superior del formulario cuando se cargan los datos
   useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
-      try {
-        const res = await usersService.getUserById(params.id as string, token);
-        setRecord(res.data);
-        form.setFieldsValue({
-          department: res.data.personalInfo?.department || undefined,
-          position: res.data.personalInfo?.position || undefined,
-          startDate: res.data.personalInfo?.startDate || undefined,
-          currentMachine: res.data.personalInfo?.currentMachine || undefined,
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (params.id) fetch();
-  }, [params.id]);
+    if (userData?.data && form) {
+      const user = userData.data;
+      const formData: Partial<UserFormData> = {
+        ...user,
+        // Mapear campos de información personal disponibles en UserPersonalInfoLite
+        department: user.personalInfo?.department || undefined,
+        position: user.personalInfo?.position || undefined,
+        startDate: user.personalInfo?.startDate || undefined,
+        currentMachine: user.personalInfo?.currentMachine || undefined,
+        // Los campos phone, birthDate y emergencyContact se dejarán vacíos hasta que se obtengan
+        phone: undefined,
+        birthDate: undefined,
+        emergencyContact: undefined,
+      };
+      
+      form.setFieldsValue(formData);
+    }
+  }, [userData, form]);
 
-  const handleSavePersonal = async () => {
-    const values = await form.validateFields();
-    await usersService.updatePersonalInfo(params.id as string, values, token);
-    message.success("Información personal actualizada");
-  };
-
-  const handleChangeRole = async (role: UserRole) => {
-    const body: UpdateRoleRequest = { role };
-    await usersService.updateRole(params.id as string, body, token);
-    message.success("Rol actualizado");
-  };
-
-  const handleChangeStatus = async (checked: boolean) => {
-    const body: UpdateStatusRequest = { isActive: checked };
-    await usersService.updateStatus(params.id as string, body, token);
-    message.success("Estado actualizado");
-  };
+  if (!canManage) {
+    return <div>No tienes permisos para editar usuarios.</div>;
+  }
 
   return (
-    <Edit isLoading={loading} title="Editar usuario">
-      {!canManage ? (
-        <div>No tienes permisos para editar usuarios.</div>
-      ) : (
-        <>
-          <Form layout="vertical" form={form} onFinish={handleSavePersonal}>
-            <Form.Item label="Departamento" name="department">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Cargo" name="position">
-              <Input />
-            </Form.Item>
-            <Form.Item label="Fecha de inicio (ISO)" name="startDate">
-              <Input placeholder="YYYY-MM-DD" />
-            </Form.Item>
-            <Form.Item label="Máquina actual" name="currentMachine">
-              <Input />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">Guardar</Button>
-            </Form.Item>
-          </Form>
+    <Edit saveButtonProps={saveButtonProps}>
+      <Form {...formProps} layout="vertical">
+        <Divider orientation="left">Información Básica</Divider>
+        
+        <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]}>
+          <Input />
+        </Form.Item>
+        
+        <Form.Item label="Usuario" name="username" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+        
+        <Form.Item label="Nombre" name="firstName" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+        
+        <Form.Item label="Apellido" name="lastName" rules={[{ required: true }]}>
+          <Input />
+        </Form.Item>
+        
+        <Form.Item label="Rol" name="role" rules={[{ required: true }]}>
+          <Select options={roleOptions} style={{ width: 240 }} />
+        </Form.Item>
+        
+        <Form.Item label="Estado Activo" name="isActive" valuePropName="checked">
+          <Switch checkedChildren="Activo" unCheckedChildren="Inactivo" />
+        </Form.Item>
 
-          <Form layout="vertical" style={{ marginTop: 24 }}>
-            <Form.Item label="Rol">
-              <Select
-                style={{ width: 240 }}
-                options={roleOptions}
-                value={record?.role as UserRole}
-                onChange={handleChangeRole}
-              />
-            </Form.Item>
-            <Form.Item label="Activo">
-              <Switch checked={record?.isActive} onChange={handleChangeStatus} />
-            </Form.Item>
-          </Form>
-        </>
-      )}
+        <Divider orientation="left">Información Personal</Divider>
+        
+        {/* <Form.Item label="Teléfono" name="phone">
+          <Input placeholder="Ej: +1234567890" />
+        </Form.Item> */}
+        
+        <Form.Item label="Departamento" name="department">
+          <Input placeholder="Ej: Desarrollo, RRHH, Ventas" />
+        </Form.Item>
+        
+        <Form.Item label="Cargo/Posición" name="position">
+          <Input placeholder="Ej: Desarrollador Senior, Gerente" />
+        </Form.Item>
+        
+        {/* <Form.Item label="Fecha de Nacimiento" name="birthDate">
+          <DatePicker style={{ width: '100%' }} placeholder="Selecciona fecha de nacimiento" />
+        </Form.Item> */}
+        
+        {/* <Form.Item label="Contacto de Emergencia" name="emergencyContact">
+          <Input placeholder="Nombre y teléfono del contacto de emergencia" />
+        </Form.Item> */}
+        
+        <Form.Item label="Máquina Actual" name="currentMachine">
+          <Input placeholder="Ej: Laptop Dell XPS, PC-DEV-001" />
+        </Form.Item>
+      </Form>
     </Edit>
   );
 };
-
-

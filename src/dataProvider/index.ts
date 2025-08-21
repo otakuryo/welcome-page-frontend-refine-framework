@@ -29,6 +29,7 @@ import type {
   UsersListQuery,
   CreateUserRequest,
   UpdatePersonalInfoRequest,
+  UpdateBasicInfoRequest,
   AdminBulkUpdateRequest,
 } from "../types/users";
 import { DataProviderErrorHandler } from "./errorHandler";
@@ -55,6 +56,7 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.USERS) {
         const query = DataProviderFilterHandler.createBaseQuery(pagination);
         const filteredQuery = DataProviderFilterHandler.applyUserFilters(filters, query);
+        filteredQuery.isActive = "all";
         
         const response = await usersService.listUsers(filteredQuery, token || undefined);
         
@@ -126,25 +128,21 @@ export const dataProvider: DataProvider = {
       const token = authService.getToken();
       
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.USERS) {
-        // Determinar qué tipo de actualización realizar basado en los campos
         const updateData = variables as any;
         
-        if (updateData.role !== undefined) {
-          const response = await usersService.updateRole(String(id), { role: updateData.role }, token || undefined);
-          return {
-            data: response.data as unknown as TData,
-          };
-        }
-        
-        if (updateData.isActive !== undefined) {
-          const response = await usersService.updateStatus(String(id), { isActive: updateData.isActive }, token || undefined);
-          return {
-            data: response.data as unknown as TData,
-          };
-        }
-        
-        // Actualización de información personal
+        // Separar datos básicos del usuario e información personal
+        const basicInfo: UpdateBasicInfoRequest = {};
         const personalInfo: UpdatePersonalInfoRequest = {};
+        
+        // Datos básicos del usuario
+        if (updateData.email !== undefined) basicInfo.email = updateData.email;
+        if (updateData.username !== undefined) basicInfo.username = updateData.username;
+        if (updateData.firstName !== undefined) basicInfo.firstName = updateData.firstName;
+        if (updateData.lastName !== undefined) basicInfo.lastName = updateData.lastName;
+        if (updateData.role !== undefined) basicInfo.role = updateData.role;
+        if (updateData.isActive !== undefined) basicInfo.isActive = updateData.isActive;
+        
+        // Información personal
         if (updateData.phone !== undefined) personalInfo.phone = updateData.phone;
         if (updateData.department !== undefined) personalInfo.department = updateData.department;
         if (updateData.position !== undefined) personalInfo.position = updateData.position;
@@ -153,10 +151,41 @@ export const dataProvider: DataProvider = {
         if (updateData.emergencyContact !== undefined) personalInfo.emergencyContact = updateData.emergencyContact;
         if (updateData.currentMachine !== undefined) personalInfo.currentMachine = updateData.currentMachine;
         
-        const response = await usersService.updatePersonalInfo(String(id), personalInfo, token || undefined);
-        return {
-          data: response.data as unknown as TData,
-        };
+        // Crear promesas para ambas actualizaciones si hay datos para actualizar
+        const promises: Promise<any>[] = [];
+        
+        if (Object.keys(basicInfo).length > 0) {
+          promises.push(usersService.updateBasicInfo(String(id), basicInfo, token || undefined));
+        }
+        
+        if (Object.keys(personalInfo).length > 0) {
+          promises.push(usersService.updatePersonalInfo(String(id), personalInfo, token || undefined));
+        }
+        
+        // Si no hay nada que actualizar, devolver el usuario actual
+        if (promises.length === 0) {
+          const response = await usersService.getUserById(String(id), token || undefined);
+          return {
+            data: response.data as unknown as TData,
+          };
+        }
+        
+        // Ejecutar ambas actualizaciones en paralelo
+        const responses = await Promise.all(promises);
+        
+        // Devolver los datos del usuario actualizado (del primer response que debe ser basicInfo)
+        // Si solo se actualizó personalInfo, obtener los datos completos del usuario
+        if (Object.keys(basicInfo).length > 0) {
+          return {
+            data: responses[0].data as unknown as TData,
+          };
+        } else {
+          // Solo se actualizó información personal, obtener datos completos
+          const userResponse = await usersService.getUserById(String(id), token || undefined);
+          return {
+            data: userResponse.data as unknown as TData,
+          };
+        }
       }
 
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
@@ -313,9 +342,19 @@ export const dataProvider: DataProvider = {
     try {
       const token = authService.getToken();
       
-      // Aquí puedes implementar operaciones personalizadas
-      // Por ejemplo, llamadas específicas que no encajan en los métodos estándar
+      // Manejar reset de contraseña - path específico: /users/{id}/reset-password
+      if (url?.match(/^\/users\/[^\/]+\/reset-password$/) && method === 'patch') {
+        const urlParts = url.split('/');
+        const userId = urlParts[2]; // /users/{id}/reset-password
+        const { newPassword } = payload as { newPassword: string };
+        
+        const response = await usersService.resetPassword(userId, newPassword, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
       
+      // Aquí puedes implementar otras operaciones personalizadas
       throw new Error("Operación personalizada no implementada");
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);

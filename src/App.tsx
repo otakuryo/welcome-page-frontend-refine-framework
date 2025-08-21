@@ -37,7 +37,7 @@ import {
 import { ForgotPassword } from "./pages/forgotPassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
-import { UsersCreate, UsersEdit, UsersList, UsersShow } from "./pages/users";
+import { UsersCreate, UsersEdit, UsersList, UsersShow, UsersResetPassword } from "./pages/users";
 
 function App() {
   return (
@@ -124,6 +124,7 @@ function App() {
                       <Route path="create" element={<UsersCreate />} />
                       <Route path="edit/:id" element={<UsersEdit />} />
                       <Route path="show/:id" element={<UsersShow />} />
+                      <Route path="reset-password/:id" element={<UsersResetPassword />} />
                     </Route>
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>

@@ -5,11 +5,14 @@ import {
   useTable,
 } from "@refinedev/antd";
 import { type BaseRecord } from "@refinedev/core";
-import { Space, Table, Tag } from "antd";
+import { Space, Table, Tag, Button } from "antd";
+import { KeyOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router";
 import type { UsersListItem } from "../../types/users";
 import { roleOptions } from "./models/RoleOptions";
 
 export const UsersList = () => {
+  const navigate = useNavigate();
   const { tableProps } = useTable({
     pagination: {
       pageSize: 10,
@@ -25,6 +28,17 @@ export const UsersList = () => {
       `${range[0]}-${range[1]} de ${total} elementos`,
   }
 
+  const handleRolColor = (value: string) => {
+    const listRoles = {
+      ADMIN: 'red',
+      CEO: 'purple',
+      RRHH: 'blue',
+      'JEFE_DEPARTAMENTO': 'orange',
+      USUARIO: 'green',
+    }
+    return listRoles[value as keyof typeof listRoles] || 'green';
+  }
+  
   return (
     <List>
       <Table 
@@ -50,13 +64,7 @@ export const UsersList = () => {
           dataIndex="role" 
           title={"Rol"} 
           render={(value: string) => (
-            <Tag color={
-              value === 'ADMIN' ? 'red' :
-              value === 'CEO' ? 'purple' :
-              value === 'RRHH' ? 'blue' :
-              value === 'JEFE_DEPARTAMENTO' ? 'orange' :
-              'green'
-            }>
+            <Tag color={handleRolColor(value)}>
               {roleOptions.find(option => option.value === value)?.label || value}
             </Tag>
           )}
@@ -73,7 +81,7 @@ export const UsersList = () => {
         <Table.Column 
           dataIndex={["personalInfo", "department"]} 
           title={"Departamento"} 
-          render={(value: string | null) => value || '-'}
+          render={(value: string | null) => value || 'Sin departamento'}
         />
         {/* <Table.Column 
           dataIndex="cardCount" 
@@ -89,6 +97,14 @@ export const UsersList = () => {
             <Space>
               <EditButton hideText size="small" recordItemId={record.id} />
               <ShowButton hideText size="small" recordItemId={record.id} />
+              <Button
+                type="primary"
+                size="small"
+                icon={<KeyOutlined />}
+                onClick={() => navigate(`/users/reset-password/${record.id}`)}
+                title="Reiniciar Contraseña"
+                style={{ backgroundColor: '#ff7875', borderColor: '#ff7875' }}
+              />
             </Space>
           )}
         />

@@ -110,6 +110,15 @@ export interface AdminBulkUpdateRequest {
   data?: { role?: UserRole };
 }
 
+export interface UpdateBasicInfoRequest {
+  email?: string;
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: UserRole;
+  isActive?: boolean;
+}
+
 export interface CreateUserRequest {
   email: string;
   username: string;
