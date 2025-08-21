@@ -1,5 +1,5 @@
 import React from "react";
-import { IResourceComponentsProps } from "@refinedev/core";
+import { HttpError, IResourceComponentsProps } from "@refinedev/core";
 import { Edit, useForm } from "@refinedev/antd";
 import { Form, Input, Switch, Space, Alert, Tag } from "antd";
 import { WifiOutlined, QrcodeOutlined, LockOutlined, UnlockOutlined } from "@ant-design/icons";
@@ -9,7 +9,7 @@ const { TextArea } = Input;
 const { Password } = Input;
 
 export const WifiEdit: React.FC<IResourceComponentsProps> = () => {
-  const { formProps, saveButtonProps, queryResult, form } = useForm<WifiNetwork, {}, UpdateWifiNetworkRequest>();
+  const { formProps, saveButtonProps, queryResult, form } = useForm<WifiNetwork, HttpError, UpdateWifiNetworkRequest>();
   
   const wifiData = queryResult?.data?.data;
   const [hasPassword, setHasPassword] = React.useState(!!wifiData?.password);
@@ -152,23 +152,6 @@ export const WifiEdit: React.FC<IResourceComponentsProps> = () => {
             />
           </Form.Item>
         )}
-
-        <Form.Item
-          label="Código QR"
-          name="qrCode"
-          rules={[
-            {
-              pattern: /^data:image\/(png|jpeg|jpg|gif|webp);base64,/,
-              message: "El código QR debe ser una imagen válida en formato base64",
-            },
-          ]}
-        >
-          <Input.TextArea
-            placeholder="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk..."
-            rows={6}
-            prefix={<QrcodeOutlined />}
-          />
-        </Form.Item>
 
         <Form.Item
           label="Estado de la Red"

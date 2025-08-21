@@ -108,23 +108,6 @@ export const WifiCreate: React.FC<IResourceComponentsProps> = () => {
           </Form.Item>
         )}
 
-        <Form.Item
-          label="Código QR"
-          name="qrCode"
-          rules={[
-            {
-              pattern: /^data:image\/(png|jpeg|jpg|gif|webp);base64,/,
-              message: "El código QR debe ser una imagen válida en formato base64",
-            },
-          ]}
-        >
-          <Input.TextArea
-            placeholder="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk..."
-            rows={6}
-            prefix={<QrcodeOutlined />}
-          />
-        </Form.Item>
-
         <Form.Item>
           <Alert
             message="Información sobre el Código QR"
