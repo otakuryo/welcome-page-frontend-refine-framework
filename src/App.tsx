@@ -38,6 +38,7 @@ import { ForgotPassword } from "./pages/forgotPassword";
 import { Login } from "./pages/login";
 import { Register } from "./pages/register";
 import { UsersCreate, UsersEdit, UsersList, UsersShow, UsersResetPassword } from "./pages/users";
+import { DepartmentsCreate, DepartmentsEdit, DepartmentsList, DepartmentsShow } from "./pages/departments";
 
 function App() {
   return (
@@ -78,6 +79,16 @@ function App() {
                     create: "/users/create",
                     edit: "/users/edit/:id",
                     show: "/users/show/:id",
+                  },
+                  {
+                    name: "departments",
+                    list: "/departments",
+                    create: "/departments/create",
+                    edit: "/departments/edit/:id",
+                    show: "/departments/show/:id",
+                    meta: {
+                      canDelete: true,
+                    },
                   },
                 ]}
                 options={{
@@ -125,6 +136,12 @@ function App() {
                       <Route path="edit/:id" element={<UsersEdit />} />
                       <Route path="show/:id" element={<UsersShow />} />
                       <Route path="reset-password/:id" element={<UsersResetPassword />} />
+                    </Route>
+                    <Route path="/departments">
+                      <Route index element={<DepartmentsList />} />
+                      <Route path="create" element={<DepartmentsCreate />} />
+                      <Route path="edit/:id" element={<DepartmentsEdit />} />
+                      <Route path="show/:id" element={<DepartmentsShow />} />
                     </Route>
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>

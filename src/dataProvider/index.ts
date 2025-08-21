@@ -24,6 +24,7 @@ import type {
 } from "@refinedev/core";
 import { ApiService } from "../services/apiService";
 import { UsersService } from "../services/usersService";
+import { DepartmentsService } from "../services/departmentsService";
 import { AuthService } from "../services/authService";
 import type {
   UsersListQuery,
@@ -32,6 +33,11 @@ import type {
   UpdateBasicInfoRequest,
   AdminBulkUpdateRequest,
 } from "../types/users";
+import type {
+  DepartmentsListQuery,
+  CreateDepartmentRequest,
+  UpdateDepartmentRequest,
+} from "../types/departments";
 import { DataProviderErrorHandler } from "./errorHandler";
 import { DataProviderFilterHandler } from "./filterHandler";
 import { DATA_PROVIDER_CONFIG } from "./config";
@@ -39,6 +45,7 @@ import { DATA_PROVIDER_CONFIG } from "./config";
 // Instancias de servicios
 const apiService = new ApiService();
 const usersService = new UsersService(apiService);
+const departmentsService = new DepartmentsService(apiService);
 const authService = new AuthService(apiService);
 
 export const dataProvider: DataProvider = {
@@ -59,6 +66,18 @@ export const dataProvider: DataProvider = {
         filteredQuery.isActive = "all";
         
         const response = await usersService.listUsers(filteredQuery, token || undefined);
+        
+        return {
+          data: response.data as unknown as TData[],
+          total: response.pagination.total,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        const query = DataProviderFilterHandler.createBaseDepartmentQuery(pagination);
+        const filteredQuery = DataProviderFilterHandler.applyDepartmentFilters(filters, query);
+        
+        const response = await departmentsService.listDepartments(filteredQuery, token || undefined);
         
         return {
           data: response.data as unknown as TData[],
@@ -88,6 +107,13 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        const response = await departmentsService.getDepartmentById(String(id), token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -106,6 +132,14 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.USERS) {
         const userData = variables as CreateUserRequest;
         const response = await usersService.createUser(userData, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        const departmentData = variables as CreateDepartmentRequest;
+        const response = await departmentsService.createDepartment(departmentData, token || undefined);
         return {
           data: response.data as unknown as TData,
         };
@@ -188,6 +222,14 @@ export const dataProvider: DataProvider = {
         }
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        const updateData = variables as UpdateDepartmentRequest;
+        const response = await departmentsService.updateDepartment(String(id), updateData, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -207,6 +249,14 @@ export const dataProvider: DataProvider = {
         // Implementar eliminación de usuario si es necesario
         // Por ahora, solo desactivamos el usuario
         const response = await usersService.updateStatus(String(id), { isActive: false }, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        // Para departamentos, realizamos eliminación física
+        const response = await departmentsService.deleteDepartment(String(id), token || undefined);
         return {
           data: response.data as unknown as TData,
         };
@@ -236,6 +286,15 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        const promises = ids.map(id => departmentsService.getDepartmentById(String(id), token || undefined));
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -254,6 +313,17 @@ export const dataProvider: DataProvider = {
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.USERS) {
         const promises = variables.map((userData: any) => 
           usersService.createUser(userData as CreateUserRequest, token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        const promises = variables.map((departmentData: any) => 
+          departmentsService.createDepartment(departmentData as CreateDepartmentRequest, token || undefined)
         );
         const responses = await Promise.all(promises);
         
@@ -291,6 +361,18 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        // Para departamentos, actualizamos uno por uno ya que no hay bulk update en la API
+        const promises = ids.map(id => 
+          departmentsService.updateDepartment(String(id), variables as UpdateDepartmentRequest, token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
+        };
+      }
+
       throw DataProviderErrorHandler.handleUnsupportedResource(resource);
     } catch (error) {
       throw DataProviderErrorHandler.handleError(error);
@@ -315,6 +397,18 @@ export const dataProvider: DataProvider = {
         const response = await usersService.adminBulkUpdate(bulkUpdateData, token || undefined);
         return {
           data: response.data as unknown as TData[],
+        };
+      }
+
+      if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
+        // Para departamentos, eliminamos uno por uno ya que no hay bulk delete en la API
+        const promises = ids.map(id => 
+          departmentsService.deleteDepartment(String(id), token || undefined)
+        );
+        const responses = await Promise.all(promises);
+        
+        return {
+          data: responses.map(response => response.data as unknown as TData),
         };
       }
 
@@ -349,6 +443,102 @@ export const dataProvider: DataProvider = {
         const { newPassword } = payload as { newPassword: string };
         
         const response = await usersService.resetPassword(userId, newPassword, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar obtener departamento por slug - path específico: /departments/slug/{slug}
+      if (url?.match(/^\/departments\/slug\/[^\/]+$/) && method === 'get') {
+        const urlParts = url.split('/');
+        const slug = urlParts[3]; // /departments/slug/{slug}
+        
+        const response = await departmentsService.getDepartmentBySlug(slug, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar obtener mis departamentos - path específico: /departments/my-departments
+      if (url === '/departments/my-departments' && method === 'get') {
+        const response = await departmentsService.getMyDepartments(token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar asignación de usuario a departamento - path específico: /departments/{id}/users/{userId}
+      if (url?.match(/^\/departments\/[^\/]+\/users\/[^\/]+$/) && method === 'post') {
+        const urlParts = url.split('/');
+        const departmentId = urlParts[2]; // /departments/{id}/users/{userId}
+        const userId = urlParts[4];
+        
+        const response = await departmentsService.assignUserToDepartment(
+          departmentId, 
+          userId, 
+          payload as any, 
+          token || undefined
+        );
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar remoción de usuario de departamento - path específico: /departments/{id}/users/{userId}
+      if (url?.match(/^\/departments\/[^\/]+\/users\/[^\/]+$/) && method === 'delete') {
+        const urlParts = url.split('/');
+        const departmentId = urlParts[2]; // /departments/{id}/users/{userId}
+        const userId = urlParts[4];
+        
+        const response = await departmentsService.removeUserFromDepartment(
+          departmentId, 
+          userId, 
+          token || undefined
+        );
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar obtener tarjetas de departamento - path específico: /departments/{id}/cards
+      if (url?.match(/^\/departments\/[^\/]+\/cards$/) && method === 'get') {
+        const urlParts = url.split('/');
+        const departmentId = urlParts[2]; // /departments/{id}/cards
+        
+        const response = await departmentsService.getDepartmentCards(departmentId, token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar asignación de tarjeta a departamento - path específico: /departments/{id}/cards/{cardId}
+      if (url?.match(/^\/departments\/[^\/]+\/cards\/[^\/]+$/) && method === 'post') {
+        const urlParts = url.split('/');
+        const departmentId = urlParts[2]; // /departments/{id}/cards/{cardId}
+        const cardId = urlParts[4];
+        
+        const response = await departmentsService.assignCardToDepartment(
+          departmentId, 
+          cardId, 
+          payload as any, 
+          token || undefined
+        );
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
+      // Manejar remoción de tarjeta de departamento - path específico: /departments/{id}/cards/{cardId}
+      if (url?.match(/^\/departments\/[^\/]+\/cards\/[^\/]+$/) && method === 'delete') {
+        const urlParts = url.split('/');
+        const departmentId = urlParts[2]; // /departments/{id}/cards/{cardId}
+        const cardId = urlParts[4];
+        
+        const response = await departmentsService.removeCardFromDepartment(
+          departmentId, 
+          cardId, 
+          token || undefined
+        );
         return {
           data: response.data as unknown as TData,
         };
