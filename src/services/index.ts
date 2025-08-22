@@ -3,6 +3,8 @@ export { ApiService } from './apiService';
 export { AuthService } from './authService';
 export { UsersService } from './usersService';
 export { CardsService } from './cardsService';
+export { DepartmentsService } from './departmentsService';
+export { UserDepartmentsService } from './userDepartmentsService';
 export { WifiService } from './wifiService';
 export { QuickLinksService } from './quickLinksService';
 export { dataProvider } from '../dataProvider';

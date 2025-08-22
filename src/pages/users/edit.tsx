@@ -1,10 +1,12 @@
 import { Edit, useForm } from "@refinedev/antd";
 import { usePermissions, useOne } from "@refinedev/core";
 import { Form, Input, Select, Switch, Divider } from "antd";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import type { UserDetailed } from "../../types/users";
+import type { MyDepartment } from "../../types/departments";
 import { roleOptions } from "./models/RoleOptions";
+import { DepartmentSelector } from "../../components";
 
 // Tipo extendido para el formulario que incluye campos de información personal al nivel superior
 interface UserFormData extends UserDetailed {
@@ -15,12 +17,17 @@ interface UserFormData extends UserDetailed {
   birthDate?: string;
   emergencyContact?: string;
   currentMachine?: string;
+  departments?: string[]; // IDs de departamentos seleccionados
 }
 
 export const UsersEdit = () => {
   const { id } = useParams<{ id: string }>();
   const { data: permissions } = usePermissions();
   const canManage = useMemo(() => permissions === "ADMIN" || permissions === "CEO" || permissions === "RRHH", [permissions]);
+  
+  // Estado para manejar los departamentos
+  const [userDepartments, setUserDepartments] = useState<MyDepartment[]>([]);
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>([]);
 
   // Obtener datos del usuario para mapear información personal
   const { data: userData } = useOne<UserDetailed>({
@@ -58,6 +65,15 @@ export const UsersEdit = () => {
       form.setFieldsValue(formData);
     }
   }, [userData, form]);
+
+  // Manejar cambios en los departamentos
+  const handleDepartmentChange = (departmentIds: string[], departments: MyDepartment[]) => {
+    setSelectedDepartmentIds(departmentIds);
+    setUserDepartments(departments);
+    
+    // Actualizar el formulario si es necesario
+    form.setFieldValue('departments', departmentIds);
+  };
 
   if (!canManage) {
     return <div>No tienes permisos para editar usuarios.</div>;
@@ -98,8 +114,14 @@ export const UsersEdit = () => {
           <Input placeholder="Ej: +1234567890" />
         </Form.Item> */}
         
-        <Form.Item label="Departamento" name="department">
-          <Input placeholder="Ej: Desarrollo, RRHH, Ventas" />
+        <Form.Item label="Departamentos" name="departments">
+          <DepartmentSelector
+            userId={id!}
+            value={selectedDepartmentIds}
+            onChange={handleDepartmentChange}
+            autoSave={true}
+            placeholder="Selecciona uno o más departamentos..."
+          />
         </Form.Item>
         
         <Form.Item label="Cargo/Posición" name="position">

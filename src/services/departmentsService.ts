@@ -142,4 +142,12 @@ export class DepartmentsService {
   ): Promise<ApiResponse<MyDepartment[]>> {
     return this.api.get<ApiResponse<MyDepartment[]>>('/departments/my-departments', token);
   }
+
+  // Obtener departamentos de un usuario
+  async getUserDepartments(
+    userId: string,
+    token?: string
+  ): Promise<ApiResponse<MyDepartment[]>> {
+    return this.api.get<ApiResponse<MyDepartment[]>>(`/departments/user/${userId}`, token);
+  }
 }
