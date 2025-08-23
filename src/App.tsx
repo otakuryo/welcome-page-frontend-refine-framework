@@ -40,6 +40,24 @@ import { WifiCreate, WifiEdit, WifiList, WifiShow } from "./pages/wifi";
 import { QuickLinksCreate, QuickLinksEdit, QuickLinksList, QuickLinksShow } from "./pages/quick-links";
 
 function App() {
+
+  const customOptionsHeader = {
+    syncWithLocation: true,
+    warnWhenUnsavedChanges: true,
+    useNewQueryKeys: true,
+    projectId: "dmD5WN-itiKHq-B0ImNs",
+    title: {
+      text: " ",
+      icon: (
+        <img
+          style={{ width: 128, height: 32, objectFit: "contain" }}
+          src="/img/logo-adn.png"
+        />
+      ),
+    },
+    favicon: "/img/favicon.png",
+  }
+
   return (
     <BrowserRouter>
       <RefineKbarProvider>
@@ -107,12 +125,7 @@ function App() {
                     },
                   },
                 ]}
-                options={{
-                  syncWithLocation: true,
-                  warnWhenUnsavedChanges: true,
-                  useNewQueryKeys: true,
-                  projectId: "dmD5WN-itiKHq-B0ImNs",
-                }}
+                options={customOptionsHeader}
               >
                 <Routes>
                   <Route
