@@ -6,7 +6,7 @@ export class ApiService {
   private readonly baseUrl: string;
 
   constructor(baseUrl: string = '/api/v1') {
-    this.apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    this.apiUrl = import.meta.env.VITE_API_URL;
     this.baseUrl = `${this.apiUrl}${baseUrl}`;
   }
 
