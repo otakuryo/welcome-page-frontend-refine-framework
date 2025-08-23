@@ -5,6 +5,9 @@ export const DATA_PROVIDER_CUSTOM_CONFIG = {
     USER_DEPARTMENTS: "user-departments",
     AVAILABLE_DEPARTMENTS: "available-departments",
     DEPARTMENT_ASSIGNMENTS: "department-assignments",
+    DEPARTMENT_CARDS: "department-cards",
+    AVAILABLE_CARDS: "available-cards",
+    CARD_ASSIGNMENTS: "card-assignments",
   },
   
   // Configuración de paginación por defecto

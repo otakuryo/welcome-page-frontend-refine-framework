@@ -1,9 +1,10 @@
 import { Edit, useForm } from "@refinedev/antd";
 import { usePermissions } from "@refinedev/core";
 import { Form, Input, Switch, Col, Row } from "antd";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router";
 import type { UpdateDepartmentRequest } from "../../types/departments";
+import { CardSelector } from "../../components/users/CardSelector";
 
 export const DepartmentsEdit = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +20,11 @@ export const DepartmentsEdit = () => {
     action: "edit",
     id,
   });
+
+  const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+  const handleCardChange = (cardIds: string[]) => {
+    setSelectedCardIds(cardIds);
+  };
 
   if (!canManage) {
     return <div>No tienes permisos para editar departamentos.</div>;
@@ -81,6 +87,23 @@ export const DepartmentsEdit = () => {
             unCheckedChildren="Inactivo" 
           />
         </Form.Item>
+
+        <Form.Item 
+          label="Tarjetas Asignadas" 
+          name="cardIds"
+          extra="Selecciona las tarjetas que estarán disponibles para este departamento"
+        >
+          <CardSelector 
+            departmentId={id!}
+            placeholder="Selecciona las tarjetas para este departamento..."
+            autoSave={true}
+            value={selectedCardIds}
+            onChange={handleCardChange}
+            onSaveComplete={(success) => console.log('Guardado:', success)}
+          />
+        </Form.Item>
+
+        
       </Form>
     </Edit>
   );

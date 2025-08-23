@@ -21,6 +21,9 @@ export const CUSTOM_RESOURCES = {
   USER_DEPARTMENTS: "user-departments" as const,
   AVAILABLE_DEPARTMENTS: "available-departments" as const,
   DEPARTMENT_ASSIGNMENTS: "department-assignments" as const,
+  DEPARTMENT_CARDS: "department-cards" as const,
+  AVAILABLE_CARDS: "available-cards" as const,
+  CARD_ASSIGNMENTS: "card-assignments" as const,
 };
 
 // Tipos de utilidad para TypeScript

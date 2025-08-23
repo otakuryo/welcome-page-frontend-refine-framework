@@ -233,7 +233,7 @@ export const dataProviderCustom: DataProvider = {
     meta,
   }: CustomParams): Promise<CustomResponse<TData>> => {
     try {
-      const token = authService.getToken();
+      const token = authService.getToken() || '';
 
       // 🎯 Endpoint personalizado para obtener departamentos de usuario por ID
       if (url?.match(/^\/users\/[^\/]+\/departments$/) && method === 'get') {
@@ -272,6 +272,21 @@ export const dataProviderCustom: DataProvider = {
         const response = await userDepartmentsService.getAvailableDepartments();
         return {
           data: response as unknown as TData,
+        };
+      }
+
+      // 🎯 Endpoint para obtener tarjetas disponibles de un departamento
+      if (url?.match(/^\/departments\/[^\/]+\/cards$/) && method === 'get') {
+        let departmentId = meta?.id;
+        
+        if(!departmentId) {
+          const urlParts = url.split('/');
+          departmentId = urlParts[2];
+        }
+
+        const response = await departmentsService.getDepartmentCards(departmentId, token);
+        return {
+          data: response.data as unknown as TData,
         };
       }
 
