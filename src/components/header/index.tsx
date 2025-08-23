@@ -10,6 +10,8 @@ import {
 } from "antd";
 import React, { useContext } from "react";
 import { ColorModeContext } from "../../contexts/color-mode";
+import { MoonFilled, SunFilled } from "@ant-design/icons";
+import "./index.css";
 
 const { Text } = Typography;
 const { useToken } = theme;
@@ -42,19 +44,29 @@ export const Header: React.FC<RefineThemedLayoutV2HeaderProps> = ({
     headerStyles.zIndex = 1;
   }
 
+  const delayToggleTheme = () => {
+    setTimeout(() => {
+      setMode(mode === "light" ? "dark" : "light");
+    }, 200);
+  };
+
+  const iconStyle: React.CSSProperties = {
+    fontSize: "14px",
+    color: "#000",
+    padding: "2px 5px",
+    cursor: "pointer",
+    transition: "all 0.3s ease",
+  };
+
   return (
     <AntdLayout.Header style={headerStyles}>
       <Space>
         <Switch
-          checkedChildren="🌛"
-          unCheckedChildren="🔆"
-          onChange={() => setMode(mode === "light" ? "dark" : "light")}
+          checkedChildren={<MoonFilled style={iconStyle} />}
+          unCheckedChildren={<SunFilled style={iconStyle} />}
+          onChange={delayToggleTheme}
           defaultChecked={mode === "dark"}
         />
-        <Space style={{ marginLeft: "8px" }} size="middle">
-          {user?.name && <Text strong>{user.name}</Text>}
-          {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
-        </Space>
       </Space>
     </AntdLayout.Header>
   );
