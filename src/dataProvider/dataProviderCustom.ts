@@ -278,7 +278,7 @@ export const dataProviderCustom: DataProvider = {
       // 🎯 Endpoint para obtener tarjetas disponibles de un departamento
       if (url?.match(/^\/departments\/[^\/]+\/cards$/) && method === 'get') {
         let departmentId = meta?.id;
-        
+
         if(!departmentId) {
           const urlParts = url.split('/');
           departmentId = urlParts[2];
@@ -298,7 +298,7 @@ export const dataProviderCustom: DataProvider = {
 
   // ✅ GET API URL - Construir URL de la API
   getApiUrl: () => {
-    return process.env.REACT_APP_API_URL || "http://localhost:3001/api";
+    return import.meta.env.REACT_APP_API_URL || "http://localhost:3001/api";
   },
 };
 

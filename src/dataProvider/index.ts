@@ -20,7 +20,8 @@ import type {
   DeleteManyParams,
   DeleteManyResponse,
   CustomParams,
-  CustomResponse
+  CustomResponse,
+  LogicalFilter
 } from "@refinedev/core";
 import { ApiService } from "../services/apiService";
 import { UsersService } from "../services/usersService";
@@ -83,7 +84,7 @@ export const dataProvider: DataProvider = {
       
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.USERS) {
         const query = DataProviderFilterHandler.createBaseQuery(pagination);
-        const filteredQuery = DataProviderFilterHandler.applyUserFilters(filters, query);
+        const filteredQuery = DataProviderFilterHandler.applyUserFilters(filters as LogicalFilter[], query);
         filteredQuery.isActive = "all";
         
         const response = await usersService.listUsers(filteredQuery, token || undefined);
@@ -96,7 +97,7 @@ export const dataProvider: DataProvider = {
 
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.DEPARTMENTS) {
         const query = DataProviderFilterHandler.createBaseDepartmentQuery(pagination);
-        const filteredQuery = DataProviderFilterHandler.applyDepartmentFilters(filters, query);
+        const filteredQuery = DataProviderFilterHandler.applyDepartmentFilters(filters as LogicalFilter[], query);
         
         const response = await departmentsService.listDepartments(filteredQuery, token || undefined);
         
@@ -108,7 +109,7 @@ export const dataProvider: DataProvider = {
 
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.CARDS) {
         const query = DataProviderFilterHandler.createBaseCardQuery(pagination);
-        const filteredQuery = DataProviderFilterHandler.applyCardFilters(filters, query);
+        const filteredQuery = DataProviderFilterHandler.applyCardFilters(filters as LogicalFilter[], query);
         
         const response = await cardsService.listCards(filteredQuery, token || undefined);
         
@@ -120,7 +121,7 @@ export const dataProvider: DataProvider = {
 
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.WIFI) {
         const query = DataProviderFilterHandler.createBaseWifiQuery();
-        const filteredQuery = DataProviderFilterHandler.applyWifiFilters(filters, query);
+        const filteredQuery = DataProviderFilterHandler.applyWifiFilters(filters as LogicalFilter[], query);
         
         const response = await wifiService.listWifiNetworks(filteredQuery, token || undefined);
         
@@ -132,7 +133,7 @@ export const dataProvider: DataProvider = {
 
       if (resource === DATA_PROVIDER_CONFIG.SUPPORTED_RESOURCES.QUICK_LINKS) {
         const query = DataProviderFilterHandler.createBaseQuickLinksQuery();
-        const filteredQuery = DataProviderFilterHandler.applyQuickLinksFilters(filters, query);
+        const filteredQuery = DataProviderFilterHandler.applyQuickLinksFilters(filters as LogicalFilter[], query);
         
         const response = await quickLinksService.listQuickLinks(filteredQuery, token || undefined);
         

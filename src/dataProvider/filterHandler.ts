@@ -1,4 +1,4 @@
-import type { CrudFilter, CrudOperators } from "@refinedev/core";
+import type { CrudFilter, LogicalFilter } from "@refinedev/core";
 import type { UsersListQuery } from "../types/users";
 import type { DepartmentsListQuery } from "../types/departments";
 import type { CardsListQuery } from "../types/cards";
@@ -6,21 +6,26 @@ import type { WifiListQuery } from "../types/wifi";
 import type { QuickLinksListQuery } from "../types/quicklinks";
 import { DATA_PROVIDER_CONFIG } from "./config";
 
+export const CRUD_OPERATORS = {
+  EQ: "eq",
+  CONTAINS: "contains",
+};
+
 // Clase para manejar filtros del Data Provider
 export class DataProviderFilterHandler {
   /**
    * Aplica filtros a la consulta de usuarios
    */
   static applyUserFilters(
-    filters: CrudFilter[] | undefined, 
+    filters: LogicalFilter[] | undefined, 
     query: UsersListQuery
   ): UsersListQuery {
     if (!filters) return query;
 
-    filters.forEach((filter: CrudFilter) => {
-      if (filter.operator === CrudOperators.EQ) {
+    filters.forEach((filter: LogicalFilter) => {
+      if (filter.operator === CRUD_OPERATORS.EQ) {
         this.applyEqualsFilter(filter, query);
-      } else if (filter.operator === CrudOperators.CONTAINS) {
+      } else if (filter.operator === CRUD_OPERATORS.CONTAINS) {
         this.applyContainsFilter(filter, query);
       }
     });
@@ -32,7 +37,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de igualdad
    */
   private static applyEqualsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter, 
     query: UsersListQuery
   ): void {
     const field = filter.field as string;
@@ -63,7 +68,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de contenido
    */
   private static applyContainsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter, 
     query: UsersListQuery
   ): void {
     const field = filter.field as string;
@@ -78,15 +83,15 @@ export class DataProviderFilterHandler {
    * Aplica filtros a la consulta de departamentos
    */
   static applyDepartmentFilters(
-    filters: CrudFilter[] | undefined, 
+    filters: LogicalFilter[] | undefined, 
     query: DepartmentsListQuery
   ): DepartmentsListQuery {
     if (!filters) return query;
 
-    filters.forEach((filter: CrudFilter) => {
-      if (filter.operator === CrudOperators.EQ) {
+    filters.forEach((filter: LogicalFilter) => {
+      if (filter.operator === CRUD_OPERATORS.EQ) {
         this.applyDepartmentEqualsFilter(filter, query);
-      } else if (filter.operator === CrudOperators.CONTAINS) {
+      } else if (filter.operator === CRUD_OPERATORS.CONTAINS) {
         this.applyDepartmentContainsFilter(filter, query);
       }
     });
@@ -98,7 +103,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de igualdad para departamentos
    */
   private static applyDepartmentEqualsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter, 
     query: DepartmentsListQuery
   ): void {
     const field = filter.field as string;
@@ -129,7 +134,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de contenido para departamentos
    */
   private static applyDepartmentContainsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter,
     query: DepartmentsListQuery
   ): void {
     const field = filter.field as string;
@@ -165,13 +170,13 @@ export class DataProviderFilterHandler {
    * Aplica filtros a la consulta de tarjetas
    */
   static applyCardFilters(
-    filters: CrudFilter[] | undefined, 
+    filters: LogicalFilter[] | undefined, 
     query: CardsListQuery
   ): CardsListQuery {
     if (!filters) return query;
 
-    filters.forEach((filter: CrudFilter) => {
-      if (filter.operator === CrudOperators.EQ) {
+    filters.forEach((filter: LogicalFilter) => {
+      if (filter.operator === CRUD_OPERATORS.EQ) {
         this.applyCardEqualsFilter(filter, query);
       }
     });
@@ -183,7 +188,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de igualdad para tarjetas
    */
   private static applyCardEqualsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter, 
     query: CardsListQuery
   ): void {
     const field = filter.field as string;
@@ -231,15 +236,15 @@ export class DataProviderFilterHandler {
    * Aplica filtros a la consulta de redes WiFi
    */
   static applyWifiFilters(
-    filters: CrudFilter[] | undefined, 
+    filters: LogicalFilter[] | undefined, 
     query: WifiListQuery
   ): WifiListQuery {
     if (!filters) return query;
 
-    filters.forEach((filter: CrudFilter) => {
-      if (filter.operator === CrudOperators.EQ) {
+    filters.forEach((filter: LogicalFilter) => {
+      if (filter.operator === CRUD_OPERATORS.EQ) {
         this.applyWifiEqualsFilter(filter, query);
-      } else if (filter.operator === CrudOperators.CONTAINS) {
+      } else if (filter.operator === CRUD_OPERATORS.CONTAINS) {
         this.applyWifiContainsFilter(filter, query);
       }
     });
@@ -251,7 +256,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de igualdad para redes WiFi
    */
   private static applyWifiEqualsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter, 
     query: WifiListQuery
   ): void {
     const field = filter.field as string;
@@ -270,7 +275,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de contenido para redes WiFi
    */
   private static applyWifiContainsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter, 
     query: WifiListQuery
   ): void {
     const field = filter.field as string;
@@ -294,15 +299,15 @@ export class DataProviderFilterHandler {
    * Aplica filtros a la consulta de enlaces rápidos
    */
   static applyQuickLinksFilters(
-    filters: CrudFilter[] | undefined, 
+    filters: LogicalFilter[] | undefined, 
     query: QuickLinksListQuery
   ): QuickLinksListQuery {
     if (!filters) return query;
 
-    filters.forEach((filter: CrudFilter) => {
-      if (filter.operator === CrudOperators.EQ) {
+    filters.forEach((filter: LogicalFilter) => {
+      if (filter.operator === CRUD_OPERATORS.EQ) {
         this.applyQuickLinksEqualsFilter(filter, query);
-      } else if (filter.operator === CrudOperators.CONTAINS) {
+      } else if (filter.operator === CRUD_OPERATORS.CONTAINS) {
         this.applyQuickLinksContainsFilter(filter, query);
       }
     });
@@ -314,7 +319,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de igualdad para enlaces rápidos
    */
   private static applyQuickLinksEqualsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter, 
     query: QuickLinksListQuery
   ): void {
     const field = filter.field as string;
@@ -339,7 +344,7 @@ export class DataProviderFilterHandler {
    * Aplica filtros de contenido para enlaces rápidos
    */
   private static applyQuickLinksContainsFilter(
-    filter: CrudFilter, 
+    filter: LogicalFilter, 
     query: QuickLinksListQuery
   ): void {
     const field = filter.field as string;

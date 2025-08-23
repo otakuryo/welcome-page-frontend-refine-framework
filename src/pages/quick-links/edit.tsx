@@ -1,11 +1,12 @@
 import React from "react";
+import { HttpError } from "@refinedev/core";
 import { Edit, useForm } from "@refinedev/antd";
 import { Form, Input, Switch, InputNumber } from "antd";
 import type { QuickLink, UpdateQuickLinkRequest } from "../../types/quicklinks";
 import { LinkOutlined } from "@ant-design/icons";
 
 export const QuickLinksEdit = () => {
-  const { formProps, saveButtonProps, query } = useForm<QuickLink, {}, UpdateQuickLinkRequest>({
+  const { formProps, saveButtonProps, query } = useForm<QuickLink, HttpError, UpdateQuickLinkRequest>({
     resource: "quick-links",
     redirect: "list",
   });

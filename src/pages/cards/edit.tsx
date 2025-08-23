@@ -1,5 +1,5 @@
 import React from "react";
-import { IResourceComponentsProps } from "@refinedev/core";
+import { HttpError, IResourceComponentsProps } from "@refinedev/core";
 import { Edit, useForm } from "@refinedev/antd";
 import { Form, Input, Select, InputNumber, Switch, Space, Alert } from "antd";
 import type { UpdateCardRequest, CardType, FullCard } from "../../types/cards";
@@ -20,7 +20,7 @@ const cardTypeOptions: { value: CardType; label: string }[] = [
 ];
 
 export const CardsEdit: React.FC<IResourceComponentsProps> = () => {
-  const { formProps, saveButtonProps, queryResult } = useForm<FullCard, {}, UpdateCardRequest>();
+  const { formProps, saveButtonProps, queryResult } = useForm<FullCard, HttpError, UpdateCardRequest>();
   
   const cardData = queryResult?.data?.data;
 
