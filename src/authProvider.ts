@@ -108,7 +108,7 @@ export const authProvider: AuthProvider = {
   getPermissions: async () => {
     try {
       const user = await authService.getCurrentUser();
-      return user?.role || null;
+      return user?.data?.role || null;
     } catch (error) {
       console.error("Error obteniendo permisos:", error);
       return null;
