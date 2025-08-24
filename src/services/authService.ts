@@ -1,19 +1,24 @@
 // Servicio de autenticación que implementa la lógica específica de auth
 // Dependency Inversion Principle: depende de la abstracción (ApiService)
+import { UserDetailed } from '../types';
 import type { 
   LoginRequest, 
   LoginResponse, 
   AuthUser, 
-  ApiError 
+  ApiError, 
+  ApiResponse
 } from '../types/auth';
 import { ApiService } from './apiService';
+import { UsersService } from './usersService';
 
 export class AuthService {
   private apiService: ApiService;
   private readonly TOKEN_KEY = 'refine-auth';
+  private readonly usersService: UsersService;
 
   constructor(apiService: ApiService) {
     this.apiService = apiService;
+    this.usersService = new UsersService(apiService);
   }
 
   async login(credentials: LoginRequest): Promise<{
@@ -95,7 +100,7 @@ export class AuthService {
     }
   }
 
-  async getCurrentUser(): Promise<AuthUser | null> {
+  async getCurrentUserV1(): Promise<AuthUser | null> {
     const token = this.getToken();
     if (!token || !this.isAuthenticated()) {
       return null;
@@ -120,6 +125,16 @@ export class AuthService {
       return null;
     }
   }
+
+  
+  async getCurrentUser(): Promise<ApiResponse<UserDetailed> | null> {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+
+    return this.usersService.getMe(token);
+  } 
 
   // Método para validar credenciales localmente antes de enviar
   validateCredentials(credentials: LoginRequest): { 

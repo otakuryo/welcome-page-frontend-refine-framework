@@ -118,18 +118,7 @@ export const authProvider: AuthProvider = {
   getIdentity: async () => {
     try {
       const user = await authService.getCurrentUser();
-      
-      if (user) {
-        return {
-          id: user.id,
-          name: `${user.firstName} ${user.lastName}`.trim() || user.username,
-          email: user.email,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.firstName + ' ' + user.lastName)}&background=random`,
-          role: user.role,
-        };
-      }
-      
-      return null;
+      return user?.data || null;
     } catch (error) {
       console.error("Error obteniendo identidad:", error);
       return null;

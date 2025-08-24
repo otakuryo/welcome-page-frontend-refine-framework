@@ -717,6 +717,14 @@ export const dataProvider: DataProvider = {
         };
       }
 
+      // Manejar obtener información del usuario - path específico: /users/me
+      if (url === '/auth/me' && method === 'get') {
+        const response = await usersService.getMe(token || undefined);
+        return {
+          data: response.data as unknown as TData,
+        };
+      }
+
       // Manejar obtener departamento por slug - path específico: /departments/slug/{slug}
       if (url?.match(/^\/departments\/slug\/[^\/]+$/) && method === 'get') {
         const urlParts = url.split('/');

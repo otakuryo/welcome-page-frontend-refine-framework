@@ -39,6 +39,12 @@ export class UsersService {
     return this.api.get<ApiPaginatedResponse<UsersListItem[]>>(endpoint, token);
   }
 
+  async getMe(
+    token?: string
+  ): Promise<ApiResponse<UserDetailed>> {
+    return this.api.get<ApiResponse<UserDetailed>>(`/auth/me`, token);
+  }
+
   async getUserById(
     id: string,
     token?: string
