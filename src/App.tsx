@@ -28,7 +28,7 @@ import { App as AntdApp } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router";
 import { authProvider } from "./authProvider";
 import { combinedDataProvider } from "./dataProvider/combinedDataProvider";
-import { Header } from "./components/header";
+import { Header, PermissionBasedRedirect } from "./components";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import { ForgotPassword } from "./pages/forgotPassword";
 import { Login } from "./pages/login";
@@ -38,6 +38,7 @@ import { DepartmentsCreate, DepartmentsEdit, DepartmentsList, DepartmentsShow } 
 import { CardsCreate, CardsEdit, CardsList, CardsShow } from "./pages/cards";
 import { WifiCreate, WifiEdit, WifiList, WifiShow } from "./pages/wifi";
 import { QuickLinksCreate, QuickLinksEdit, QuickLinksList, QuickLinksShow } from "./pages/quick-links";
+import { WelcomePage } from "./pages/welcome";
 
 function App() {
 
@@ -128,6 +129,20 @@ function App() {
                 options={customOptionsHeader}
               >
                 <Routes>
+                  {/* Ruta para usuarios con permisos limitados - solo muestra Welcome sin layout */}
+                  <Route
+                    path="/welcome"
+                    element={
+                      <Authenticated
+                        key="authenticated-welcome"
+                        fallback={<CatchAllNavigate to="/login" />}
+                      >
+                        <WelcomePage />
+                      </Authenticated>
+                    }
+                  />
+                  
+                  {/* Ruta principal para usuarios con permisos superiores - con layout completo */}
                   <Route
                     element={
                       <Authenticated
@@ -145,7 +160,7 @@ function App() {
                   >
                     <Route
                       index
-                      element={<NavigateToResource resource="users" />}
+                      element={<PermissionBasedRedirect />}
                     />
                     <Route path="/users">
                       <Route index element={<UsersList />} />
@@ -186,7 +201,7 @@ function App() {
                         key="authenticated-outer"
                         fallback={<Outlet />}
                       >
-                        <NavigateToResource />
+                        <PermissionBasedRedirect />
                       </Authenticated>
                     }
                   >
