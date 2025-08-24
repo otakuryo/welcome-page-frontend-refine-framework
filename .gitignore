@@ -27,3 +27,6 @@ _.sln
 
 # Exmaples files
 examples/
+
+# Environment variables
+.env
